@@ -187,6 +187,11 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+-- Jump up the context
+-- vim.keymap.set('n', '[c', function()
+--   require('treesitter-context').go_to_context(vim.v.count1)
+-- end, { silent = true })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -510,8 +515,11 @@ require('lazy').setup({
           --
           -- When you move your cursor, the highlights will be cleared (the second autocommand).
           local client = vim.lsp.get_client_by_id(event.data.client_id)
+          -- local vscode = require 'vscode'
+
           if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
             local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
+
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf,
               group = highlight_augroup,
@@ -521,18 +529,31 @@ require('lazy').setup({
             vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
               buffer = event.buf,
               group = highlight_augroup,
-              callback = vim.lsp.buf.clear_references,
+              callback = function()
+                if vim.g.vscode then
+                  -- In VSCode, we'll remove the selection and then trigger a cursor move
+                  -- vscode.action 'cancelSelection'
+                  -- vscode.action('cursorMove', { args = { to = 'right', by = 'character', value = 1 } })
+                  -- vscode.action('cursorMove', { args = { to = 'left', by = 'character', value = 1 } })
+                else
+                  vim.lsp.buf.clear_references()
+                end
+              end,
             })
 
             vim.api.nvim_create_autocmd('LspDetach', {
               group = vim.api.nvim_create_augroup('kickstart-lsp-detach', { clear = true }),
               callback = function(event2)
-                vim.lsp.buf.clear_references()
+                if vim.g.vscode then
+                  -- In VSCode, we'll remove the selection
+                  -- vscode.action 'cancelSelection'
+                else
+                  vim.lsp.buf.clear_references()
+                end
                 vim.api.nvim_clear_autocmds { group = 'kickstart-lsp-highlight', buffer = event2.buf }
               end,
             })
           end
-
           -- The following code creates a keymap to toggle inlay hints in your
           -- code, if the language server you are using supports them
           --
@@ -564,8 +585,8 @@ require('lazy').setup({
       local servers = {
         clangd = {},
         -- gopls = {},
-        -- pyright = {},
-        rust_analyzer = {},
+        pyright = {},
+        -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -873,6 +894,15 @@ require('lazy').setup({
     end,
   },
   -- {
+  --   'nvim-treesitter/nvim-treesitter-context',
+  --   dependencies = { 'nvim-treesitter/nvim-treesitter' },
+  --   config = function()
+  --     require('treesitter-context').setup {
+  --       -- Optional settings can go here
+  --     }
+  --   end,
+  -- },
+  -- {
   --   'christoomey/vim-tmux-navigator',
   --   cmd = {
   --     'TmuxNavigateLeft',
@@ -899,7 +929,7 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.debug',
   require 'kickstart.plugins.indent_line',
   require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
