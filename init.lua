@@ -586,7 +586,8 @@ require('lazy').setup({
         clangd = {},
         -- gopls = {},
         pyright = {},
-        -- rust_analyzer = {},
+        bashls = {},
+        rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -595,7 +596,7 @@ require('lazy').setup({
         -- But for many setups, the LSP (`tsserver`) will work just fine
         -- tsserver = {},
         --
-
+        marksman = {},
         lua_ls = {
           -- cmd = {...},
           -- filetypes = { ...},
@@ -805,7 +806,7 @@ require('lazy').setup({
     'folke/tokyonight.nvim',
     priority = 1000, -- Make sure to load this before all the other start plugins.
     opts = {
-      transparent = true,
+      transparent = false,
       styles = {
         sidebars = 'transparent',
         floats = 'transparent',
