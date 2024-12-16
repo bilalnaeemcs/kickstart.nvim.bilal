@@ -90,7 +90,7 @@ return {
         :find()
     end
 
-    vim.keymap.set('n', '<leader>ha', function()
+    vim.keymap.set('n', '<leader>hl', function()
       toggle_telescope(harpoon:list())
     end, { desc = 'Show marks' })
 
